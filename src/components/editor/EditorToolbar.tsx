@@ -19,6 +19,8 @@ interface EditorToolbarProps {
   onDeviceChange: (device: 'desktop' | 'tablet' | 'mobile') => void;
   zoom: number;
   onZoomChange: (zoom: number) => void;
+  isPreviewMode: boolean;
+  onPreviewToggle: () => void;
 }
 
 export function EditorToolbar({ 
@@ -26,7 +28,9 @@ export function EditorToolbar({
   deviceView, 
   onDeviceChange,
   zoom,
-  onZoomChange 
+  onZoomChange,
+  isPreviewMode,
+  onPreviewToggle
 }: EditorToolbarProps) {
   const navigate = useNavigate();
 
@@ -58,9 +62,14 @@ export function EditorToolbar({
           Redo
         </Button>
         <div className="h-6 w-px bg-border mx-2" />
-        <Button variant="outline" size="sm" className="gap-2">
+        <Button 
+          variant={isPreviewMode ? "default" : "outline"} 
+          size="sm" 
+          className="gap-2"
+          onClick={onPreviewToggle}
+        >
           <Eye className="w-4 h-4" />
-          Preview
+          {isPreviewMode ? "Edit" : "Preview"}
         </Button>
         <Button size="sm" className="gap-2">
           <Upload className="w-4 h-4" />

@@ -30,9 +30,10 @@ interface EditorCanvasProps {
   deviceView: 'desktop' | 'tablet' | 'mobile';
   zoom: number;
   onElementSelect: (element: CanvasElement | null) => void;
+  isPreviewMode?: boolean;
 }
 
-export function EditorCanvas({ deviceView, zoom, onElementSelect }: EditorCanvasProps) {
+export function EditorCanvas({ deviceView, zoom, onElementSelect, isPreviewMode = false }: EditorCanvasProps) {
   const [canvasData, setCanvasData] = useState<CanvasData>({
     top: [],
     middle: [],
@@ -240,10 +241,12 @@ export function EditorCanvas({ deviceView, zoom, onElementSelect }: EditorCanvas
           transformOrigin: 'top center'
         }}
         onClick={() => {
-          setSelectedSectionId(null);
-          setSelectedContainerId(null);
-          setSelectedElementId(null);
-          onElementSelect(null);
+          if (!isPreviewMode) {
+            setSelectedSectionId(null);
+            setSelectedContainerId(null);
+            setSelectedElementId(null);
+            onElementSelect(null);
+          }
         }}
       >
         <CanvasRegion
@@ -259,6 +262,7 @@ export function EditorCanvas({ deviceView, zoom, onElementSelect }: EditorCanvas
           onDropInContainer={handleDropInContainer}
           onDropInSection={handleDropInSection}
           onAddSection={() => handleAddSection('top')}
+          isPreviewMode={isPreviewMode}
         />
 
         <CanvasRegion
@@ -274,6 +278,7 @@ export function EditorCanvas({ deviceView, zoom, onElementSelect }: EditorCanvas
           onDropInContainer={handleDropInContainer}
           onDropInSection={handleDropInSection}
           onAddSection={() => handleAddSection('middle')}
+          isPreviewMode={isPreviewMode}
         />
 
         <CanvasRegion
@@ -289,6 +294,7 @@ export function EditorCanvas({ deviceView, zoom, onElementSelect }: EditorCanvas
           onDropInContainer={handleDropInContainer}
           onDropInSection={handleDropInSection}
           onAddSection={() => handleAddSection('bottom')}
+          isPreviewMode={isPreviewMode}
         />
       </div>
     </div>

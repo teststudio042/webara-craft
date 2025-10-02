@@ -8,19 +8,22 @@ interface CanvasElementProps {
   };
   isSelected: boolean;
   onSelect: () => void;
+  isPreviewMode?: boolean;
 }
 
-export function CanvasElement({ element, isSelected, onSelect }: CanvasElementProps) {
+export function CanvasElement({ element, isSelected, onSelect, isPreviewMode = false }: CanvasElementProps) {
   const baseStyle = {
     ...element.styles,
-    outline: isSelected ? '2px solid hsl(var(--primary))' : 'none',
-    cursor: 'pointer',
+    outline: isSelected && !isPreviewMode ? '2px solid hsl(var(--primary))' : 'none',
+    cursor: isPreviewMode ? 'default' : 'pointer',
     position: 'relative' as const,
   };
 
   const handleClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onSelect();
+    if (!isPreviewMode) {
+      e.stopPropagation();
+      onSelect();
+    }
   };
 
   switch (element.type) {

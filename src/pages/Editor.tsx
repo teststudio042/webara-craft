@@ -17,6 +17,7 @@ export default function Editor() {
   const [deviceView, setDeviceView] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [zoom, setZoom] = useState(100);
   const [selectedElement, setSelectedElement] = useState<any>(null);
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
 
   useEffect(() => {
     loadProject();
@@ -47,54 +48,61 @@ export default function Editor() {
         onDeviceChange={setDeviceView}
         zoom={zoom}
         onZoomChange={setZoom}
+        isPreviewMode={isPreviewMode}
+        onPreviewToggle={() => setIsPreviewMode(!isPreviewMode)}
       />
 
       {/* Main Editor Area */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left Sidebar - Libraries */}
-        <aside className="w-72 border-r border-border bg-card overflow-y-auto">
-          <div className="p-4">
-            <Tabs defaultValue="elements" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-4">
-                <TabsTrigger value="elements">Elements</TabsTrigger>
-                <TabsTrigger value="components">Components</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="elements" className="mt-0">
-                <ElementLibrary />
-              </TabsContent>
-              
-              <TabsContent value="components" className="mt-0">
-                <ComponentLibrary />
-              </TabsContent>
-            </Tabs>
-          </div>
-        </aside>
+        {!isPreviewMode && (
+          <aside className="w-72 border-r border-border bg-card overflow-y-auto">
+            <div className="p-4">
+              <Tabs defaultValue="elements" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 mb-4">
+                  <TabsTrigger value="elements">Elements</TabsTrigger>
+                  <TabsTrigger value="components">Components</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="elements" className="mt-0">
+                  <ElementLibrary />
+                </TabsContent>
+                
+                <TabsContent value="components" className="mt-0">
+                  <ComponentLibrary />
+                </TabsContent>
+              </Tabs>
+            </div>
+          </aside>
+        )}
 
         {/* Canvas */}
         <EditorCanvas
           deviceView={deviceView}
           zoom={zoom}
           onElementSelect={setSelectedElement}
+          isPreviewMode={isPreviewMode}
         />
 
         {/* Right Sidebar - Properties */}
-        <aside className="w-80 border-l border-border bg-card overflow-y-auto">
-          <div className="p-4">
-            <h2 className="font-semibold text-sm mb-4">Properties</h2>
-            <PropertiesPanel
-              selectedElement={selectedElement}
-              onUpdateElement={(updates) => {
-                // TODO: Implement element update
-                console.log('Update element:', updates);
-              }}
-            />
-          </div>
-        </aside>
+        {!isPreviewMode && (
+          <aside className="w-80 border-l border-border bg-card overflow-y-auto">
+            <div className="p-4">
+              <h2 className="font-semibold text-sm mb-4">Properties</h2>
+              <PropertiesPanel
+                selectedElement={selectedElement}
+                onUpdateElement={(updates) => {
+                  // TODO: Implement element update
+                  console.log('Update element:', updates);
+                }}
+              />
+            </div>
+          </aside>
+        )}
       </div>
 
       {/* Bottom Bar - Breadcrumb */}
-      <Breadcrumb selectedElement={selectedElement} />
+      {!isPreviewMode && <Breadcrumb selectedElement={selectedElement} />}
     </div>
   );
 }

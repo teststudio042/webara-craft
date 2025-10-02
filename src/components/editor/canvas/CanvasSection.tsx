@@ -29,6 +29,7 @@ interface CanvasSectionProps {
   onContainerSelect: (containerId: string) => void;
   onDropInContainer: (containerId: string, elementData: any) => void;
   onDropInSection: (elementData: any) => void;
+  isPreviewMode?: boolean;
 }
 
 export function CanvasSection({ 
@@ -40,7 +41,8 @@ export function CanvasSection({
   onElementSelect,
   onContainerSelect,
   onDropInContainer,
-  onDropInSection
+  onDropInSection,
+  isPreviewMode = false
 }: CanvasSectionProps) {
   const [dragOver, setDragOver] = useState(false);
 
@@ -72,26 +74,28 @@ export function CanvasSection({
         width: '100%',
         padding: '60px 20px',
         backgroundColor: dragOver ? 'hsl(var(--primary) / 0.05)' : 'hsl(var(--background))',
-        border: isSelected ? '2px solid hsl(var(--primary))' : '1px solid hsl(var(--border))',
+        border: isPreviewMode ? 'none' : (isSelected ? '2px solid hsl(var(--primary))' : '1px solid hsl(var(--border))'),
         minHeight: '150px',
         transition: 'all 0.2s ease',
-        cursor: 'pointer'
+        cursor: isPreviewMode ? 'default' : 'pointer'
       }}
       onClick={(e) => {
-        e.stopPropagation();
-        onSelect();
+        if (!isPreviewMode) {
+          e.stopPropagation();
+          onSelect();
+        }
       }}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
+      onDragOver={!isPreviewMode ? handleDragOver : undefined}
+      onDragLeave={!isPreviewMode ? handleDragLeave : undefined}
+      onDrop={!isPreviewMode ? handleDrop : undefined}
     >
-      {dragOver && (
+      {dragOver && !isPreviewMode && (
         <div className="border-2 border-dashed border-primary bg-primary/5 rounded-lg p-8 text-center mb-4">
           <p className="text-primary font-medium">Drop here</p>
         </div>
       )}
       
-      {isEmpty && !dragOver && (
+      {isEmpty && !dragOver && !isPreviewMode && (
         <div className="text-center text-muted-foreground py-12">
           <p className="text-lg font-medium">📄 Section</p>
           <p className="text-sm mt-2">Drop containers or elements here</p>
@@ -108,6 +112,7 @@ export function CanvasSection({
             onSelect={() => onContainerSelect(container.id)}
             onElementSelect={onElementSelect}
             onDrop={(data) => onDropInContainer(container.id, data)}
+            isPreviewMode={isPreviewMode}
           />
         ))}
         
@@ -115,8 +120,9 @@ export function CanvasSection({
           <div key={element.id} className="max-w-4xl mx-auto">
             <CanvasElement
               element={element}
-              isSelected={selectedElementId === element.id}
+              isSelected={!isPreviewMode && selectedElementId === element.id}
               onSelect={() => onElementSelect(element)}
+              isPreviewMode={isPreviewMode}
             />
           </div>
         ))}
