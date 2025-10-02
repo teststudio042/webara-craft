@@ -34,11 +34,11 @@ interface EditorCanvasProps {
 }
 
 export function EditorCanvas({ deviceView, zoom, onElementSelect, isPreviewMode = false }: EditorCanvasProps) {
-  const [canvasData, setCanvasData] = useState<CanvasData>({
-    top: [],
+  const [canvasData, setCanvasData] = useState<CanvasData>(() => ({
+    top: [{ id: 'section-top', containers: [], directElements: [] }],
     middle: [],
-    bottom: []
-  });
+    bottom: [{ id: 'section-bottom', containers: [], directElements: [] }]
+  }));
   
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
   const [selectedContainerId, setSelectedContainerId] = useState<string | null>(null);
@@ -59,6 +59,15 @@ export function EditorCanvas({ deviceView, zoom, onElementSelect, isPreviewMode 
       icon: { name: 'star' },
       card: { title: 'Card Title', text: 'Card description goes here', buttonText: 'Learn More' },
       form: { fields: ['Name', 'Email'], submitText: 'Submit' },
+      navbar: { logo: 'Webara', links: ['Home', 'About', 'Contact'], cta: 'Sign Up' },
+      footer: { 
+        columns: [
+          { title: 'Company', links: ['About', 'Blog', 'Careers'] },
+          { title: 'Product', links: ['Features', 'Pricing', 'Docs'] },
+          { title: 'Legal', links: ['Privacy', 'Terms', 'Contact'] }
+        ],
+        socials: ['Twitter', 'GitHub', 'LinkedIn']
+      },
     };
     return defaults[type] || {};
   };
@@ -67,8 +76,8 @@ export function EditorCanvas({ deviceView, zoom, onElementSelect, isPreviewMode 
     const baseStyles: Record<string, any> = {
       text: { fontSize: '16px', color: 'hsl(var(--foreground))', fontWeight: 'normal' },
       button: { 
-        backgroundColor: '#2563eb', 
-        color: '#ffffff', 
+        backgroundColor: 'hsl(var(--primary))', 
+        color: 'hsl(var(--primary-foreground))', 
         padding: '12px 24px', 
         borderRadius: '8px',
         fontSize: '14px',
@@ -76,15 +85,25 @@ export function EditorCanvas({ deviceView, zoom, onElementSelect, isPreviewMode 
         border: 'none',
         cursor: 'pointer'
       },
-      link: { color: '#2563eb', textDecoration: 'underline', fontSize: '14px' },
+      link: { color: 'hsl(var(--primary))', textDecoration: 'underline', fontSize: '14px' },
       image: { width: '100%', maxWidth: '400px', height: 'auto', backgroundColor: 'hsl(var(--muted))' },
       card: { 
         padding: '24px', 
         backgroundColor: 'hsl(var(--card))', 
         border: '1px solid hsl(var(--border))', 
         borderRadius: '12px',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+        boxShadow: '0 1px 3px hsl(var(--foreground) / 0.1)'
       },
+      navbar: {
+        padding: '16px 24px',
+        backgroundColor: 'hsl(var(--card))',
+        borderBottom: '1px solid hsl(var(--border))'
+      },
+      footer: {
+        padding: '40px 24px',
+        backgroundColor: 'hsl(var(--muted))',
+        borderTop: '1px solid hsl(var(--border))'
+      }
     };
     return baseStyles[type] || {};
   };
@@ -160,7 +179,7 @@ export function EditorCanvas({ deviceView, zoom, onElementSelect, isPreviewMode 
     const label = data.getData('elementLabel') || data.getData('componentLabel');
     
     if (!elementType) return;
-
+  
     let targetRegion: 'top' | 'middle' | 'bottom' | null = null;
     for (const region of ['top', 'middle', 'bottom'] as const) {
       if (canvasData[region].some(s => s.id === sectionId)) {
@@ -168,18 +187,24 @@ export function EditorCanvas({ deviceView, zoom, onElementSelect, isPreviewMode 
         break;
       }
     }
-
+  
     if (!targetRegion) return;
 
+    // Enforce region constraints
+    const isTop = targetRegion === 'top';
+    const isBottom = targetRegion === 'bottom';
+    if (isTop && !['navbar', 'container', 'section'].includes(elementType)) return;
+    if (isBottom && !['footer', 'container', 'section'].includes(elementType)) return;
+  
     if (elementType === 'container' || elementType === 'section') {
       const newContainer: Container = {
         id: `container-${Date.now()}`,
         elements: []
       };
-
+  
       setCanvasData(prev => ({
         ...prev,
-        [targetRegion]: prev[targetRegion].map(section => {
+        [targetRegion!]: prev[targetRegion!].map(section => {
           if (section.id === sectionId) {
             return {
               ...section,
@@ -189,15 +214,15 @@ export function EditorCanvas({ deviceView, zoom, onElementSelect, isPreviewMode 
           return section;
         })
       }));
-
+  
       setSelectedContainerId(newContainer.id);
       onElementSelect(null);
     } else {
       const newElement = createNewElement(elementType, label);
-
+  
       setCanvasData(prev => ({
         ...prev,
-        [targetRegion]: prev[targetRegion].map(section => {
+        [targetRegion!]: prev[targetRegion!].map(section => {
           if (section.id === sectionId) {
             return {
               ...section,
@@ -207,7 +232,7 @@ export function EditorCanvas({ deviceView, zoom, onElementSelect, isPreviewMode 
           return section;
         })
       }));
-
+  
       setSelectedElementId(newElement.id);
       onElementSelect(newElement);
     }
@@ -231,6 +256,36 @@ export function EditorCanvas({ deviceView, zoom, onElementSelect, isPreviewMode 
     onElementSelect(element);
   };
 
+  const handleCanvasDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+  };
+
+  const handleCanvasDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const elementType = e.dataTransfer.getData('elementType') || e.dataTransfer.getData('componentType');
+    const label = e.dataTransfer.getData('elementLabel') || e.dataTransfer.getData('componentLabel');
+    if (!elementType) return;
+
+    // Only auto-wrap when middle region is empty
+    if (canvasData.middle.length === 0) {
+      const newSection: Section = {
+        id: `section-${Date.now()}`,
+        containers: [],
+        directElements: []
+      };
+
+      if (elementType === 'container' || elementType === 'section') {
+        const newContainer: Container = { id: `container-${Date.now()}`, elements: [] };
+        newSection.containers.push(newContainer);
+      } else {
+        const newContainer: Container = { id: `container-${Date.now()}`, elements: [createNewElement(elementType, label)] };
+        newSection.containers.push(newContainer);
+      }
+
+      setCanvasData(prev => ({ ...prev, middle: [...prev.middle, newSection] }));
+    }
+  };
   return (
     <div className="flex-1 bg-muted/30 overflow-auto p-8">
       <div 
@@ -248,6 +303,8 @@ export function EditorCanvas({ deviceView, zoom, onElementSelect, isPreviewMode 
             onElementSelect(null);
           }
         }}
+        onDragOver={!isPreviewMode ? handleCanvasDragOver : undefined}
+        onDrop={!isPreviewMode ? handleCanvasDrop : undefined}
       >
         <CanvasRegion
           region="top"

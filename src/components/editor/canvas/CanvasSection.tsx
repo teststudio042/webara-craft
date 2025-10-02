@@ -117,7 +117,10 @@ export function CanvasSection({
         ))}
         
         {section.directElements.map((element) => (
-          <div key={element.id} className="max-w-4xl mx-auto">
+          <div
+            key={element.id}
+            className={["navbar", "footer"].includes(element.type) ? "" : "max-w-4xl mx-auto"}
+          >
             <CanvasElement
               element={element}
               isSelected={!isPreviewMode && selectedElementId === element.id}

@@ -57,7 +57,7 @@ export function CanvasContainer({
     <div
       className="relative"
       style={{
-        width: '100%',
+        width: '80%',
         margin: '0 auto',
         padding: '20px',
         backgroundColor: dragOver ? 'hsl(var(--primary) / 0.05)' : (isPreviewMode ? 'transparent' : 'hsl(var(--muted))'),
