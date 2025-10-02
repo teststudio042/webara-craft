@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Layout } from "lucide-react";
+import { CanvasRegion } from "./canvas/CanvasRegion";
 
 interface CanvasElement {
   id: string;
@@ -9,6 +9,23 @@ interface CanvasElement {
   styles: any;
 }
 
+interface Container {
+  id: string;
+  elements: CanvasElement[];
+}
+
+interface Section {
+  id: string;
+  containers: Container[];
+  directElements: CanvasElement[];
+}
+
+interface CanvasData {
+  top: Section[];
+  middle: Section[];
+  bottom: Section[];
+}
+
 interface EditorCanvasProps {
   deviceView: 'desktop' | 'tablet' | 'mobile';
   zoom: number;
@@ -16,46 +33,20 @@ interface EditorCanvasProps {
 }
 
 export function EditorCanvas({ deviceView, zoom, onElementSelect }: EditorCanvasProps) {
-  const [elements, setElements] = useState<CanvasElement[]>([]);
-  const [dragOver, setDragOver] = useState(false);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [canvasData, setCanvasData] = useState<CanvasData>({
+    top: [],
+    middle: [],
+    bottom: []
+  });
+  
+  const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
+  const [selectedContainerId, setSelectedContainerId] = useState<string | null>(null);
+  const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
 
   const canvasWidths = {
     desktop: '100%',
     tablet: '768px',
     mobile: '375px'
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'copy';
-    setDragOver(true);
-  };
-
-  const handleDragLeave = () => {
-    setDragOver(false);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragOver(false);
-
-    const elementType = e.dataTransfer.getData('elementType');
-    const componentType = e.dataTransfer.getData('componentType');
-    const type = elementType || componentType;
-    const label = e.dataTransfer.getData('elementLabel') || e.dataTransfer.getData('componentLabel');
-
-    if (!type) return;
-
-    const newElement: CanvasElement = {
-      id: `${type}-${Date.now()}`,
-      type,
-      label,
-      content: getDefaultContent(type),
-      styles: getDefaultStyles(type)
-    };
-
-    setElements([...elements, newElement]);
   };
 
   const getDefaultContent = (type: string) => {
@@ -67,16 +58,13 @@ export function EditorCanvas({ deviceView, zoom, onElementSelect }: EditorCanvas
       icon: { name: 'star' },
       card: { title: 'Card Title', text: 'Card description goes here', buttonText: 'Learn More' },
       form: { fields: ['Name', 'Email'], submitText: 'Submit' },
-      hero: { title: 'Welcome to Your Site', subtitle: 'Build something amazing', ctaText: 'Get Started' },
-      navbar: { logo: 'Logo', links: ['Home', 'About', 'Contact'] },
-      footer: { columns: ['Company', 'Resources', 'Legal'] }
     };
     return defaults[type] || {};
   };
 
   const getDefaultStyles = (type: string) => {
     const baseStyles: Record<string, any> = {
-      text: { fontSize: '16px', color: '#000000', fontWeight: 'normal' },
+      text: { fontSize: '16px', color: 'hsl(var(--foreground))', fontWeight: 'normal' },
       button: { 
         backgroundColor: '#2563eb', 
         color: '#ffffff', 
@@ -88,160 +76,158 @@ export function EditorCanvas({ deviceView, zoom, onElementSelect }: EditorCanvas
         cursor: 'pointer'
       },
       link: { color: '#2563eb', textDecoration: 'underline', fontSize: '14px' },
-      image: { width: '100%', maxWidth: '400px', height: 'auto', backgroundColor: '#e5e7eb' },
-      container: { padding: '20px', backgroundColor: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '8px' },
-      section: { padding: '40px 20px', backgroundColor: '#ffffff', width: '100%' },
+      image: { width: '100%', maxWidth: '400px', height: 'auto', backgroundColor: 'hsl(var(--muted))' },
       card: { 
         padding: '24px', 
-        backgroundColor: '#ffffff', 
-        border: '1px solid #e5e7eb', 
+        backgroundColor: 'hsl(var(--card))', 
+        border: '1px solid hsl(var(--border))', 
         borderRadius: '12px',
         boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
       },
-      hero: { 
-        padding: '80px 20px', 
-        backgroundColor: '#f9fafb', 
-        textAlign: 'center',
-        backgroundImage: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-      },
-      navbar: { 
-        padding: '16px 40px', 
-        backgroundColor: '#ffffff', 
-        borderBottom: '1px solid #e5e7eb',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center'
-      },
-      footer: { 
-        padding: '40px 20px', 
-        backgroundColor: '#1f2937', 
-        color: '#ffffff',
-        textAlign: 'center'
-      }
     };
     return baseStyles[type] || {};
   };
 
-  const renderElement = (element: CanvasElement) => {
-    const isSelected = selectedId === element.id;
-    const style = {
-      ...element.styles,
-      outline: isSelected ? '2px solid #2563eb' : 'none',
-      position: 'relative' as const,
-      minHeight: '40px',
-      margin: '8px 0'
+  const createNewElement = (type: string, label: string): CanvasElement => {
+    return {
+      id: `${type}-${Date.now()}`,
+      type,
+      label,
+      content: getDefaultContent(type),
+      styles: getDefaultStyles(type)
+    };
+  };
+
+  const handleAddSection = (region: 'top' | 'middle' | 'bottom') => {
+    const newSection: Section = {
+      id: `section-${Date.now()}`,
+      containers: [],
+      directElements: []
     };
 
-    const handleClick = (e: React.MouseEvent) => {
-      e.stopPropagation();
-      setSelectedId(element.id);
-      onElementSelect(element);
-    };
+    setCanvasData(prev => ({
+      ...prev,
+      [region]: [...prev[region], newSection]
+    }));
+  };
 
-    switch (element.type) {
-      case 'text':
-        return (
-          <div key={element.id} style={style} onClick={handleClick}>
-            <p style={{ fontSize: element.styles.fontSize, color: element.styles.color }}>
-              {element.content.text}
-            </p>
-          </div>
-        );
-      
-      case 'button':
-        return (
-          <div key={element.id} onClick={handleClick} style={{ margin: '8px 0' }}>
-            <button style={style}>{element.content.text}</button>
-          </div>
-        );
-      
-      case 'link':
-        return (
-          <div key={element.id} onClick={handleClick} style={{ margin: '8px 0' }}>
-            <a href={element.content.href} style={style}>{element.content.text}</a>
-          </div>
-        );
-      
-      case 'image':
-        return (
-          <div key={element.id} onClick={handleClick} style={{ margin: '8px 0' }}>
-            <div style={{ ...style, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '200px' }}>
-              {element.content.src ? (
-                <img src={element.content.src} alt={element.content.alt} style={{ maxWidth: '100%' }} />
-              ) : (
-                <div className="text-muted-foreground">📷 Image Placeholder</div>
-              )}
-            </div>
-          </div>
-        );
-      
-      case 'section':
-      case 'container':
-        return (
-          <div key={element.id} style={style} onClick={handleClick}>
-            <div className="text-muted-foreground text-sm">
-              {element.type === 'section' ? '📦 Section' : '📦 Container'} - Drop elements here
-            </div>
-          </div>
-        );
-      
-      case 'card':
-        return (
-          <div key={element.id} style={style} onClick={handleClick}>
-            <h3 className="font-bold text-lg mb-2">{element.content.title}</h3>
-            <p className="text-muted-foreground mb-4">{element.content.text}</p>
-            <button style={getDefaultStyles('button')}>{element.content.buttonText}</button>
-          </div>
-        );
-      
-      case 'hero':
-        return (
-          <div key={element.id} style={style} onClick={handleClick}>
-            <h1 className="text-4xl font-bold text-white mb-4">{element.content.title}</h1>
-            <p className="text-xl text-white/90 mb-6">{element.content.subtitle}</p>
-            <button style={getDefaultStyles('button')}>{element.content.ctaText}</button>
-          </div>
-        );
-      
-      case 'navbar':
-      case 'navbar-component':
-        return (
-          <div key={element.id} style={style} onClick={handleClick}>
-            <div className="font-bold text-lg">{element.content.logo}</div>
-            <div className="flex gap-6">
-              {element.content.links?.map((link: string, i: number) => (
-                <a key={i} href="#" className="text-foreground hover:text-primary">{link}</a>
-              ))}
-            </div>
-          </div>
-        );
-      
-      case 'footer':
-      case 'footer-component':
-        return (
-          <div key={element.id} style={style} onClick={handleClick}>
-            <div className="grid grid-cols-3 gap-8 max-w-4xl mx-auto">
-              {element.content.columns?.map((col: string, i: number) => (
-                <div key={i}>
-                  <h4 className="font-bold mb-2">{col}</h4>
-                  <ul className="space-y-1 text-sm">
-                    <li>Link 1</li>
-                    <li>Link 2</li>
-                    <li>Link 3</li>
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-      
-      default:
-        return (
-          <div key={element.id} style={style} onClick={handleClick}>
-            <div className="text-muted-foreground">{element.label}</div>
-          </div>
-        );
+  const handleDropInContainer = (sectionId: string, containerId: string, data: DataTransfer) => {
+    const elementType = data.getData('elementType') || data.getData('componentType');
+    const label = data.getData('elementLabel') || data.getData('componentLabel');
+    
+    if (!elementType) return;
+
+    const newElement = createNewElement(elementType, label);
+
+    let targetRegion: 'top' | 'middle' | 'bottom' | null = null;
+    for (const region of ['top', 'middle', 'bottom'] as const) {
+      if (canvasData[region].some(s => s.id === sectionId)) {
+        targetRegion = region;
+        break;
+      }
     }
+
+    if (!targetRegion) return;
+
+    setCanvasData(prev => ({
+      ...prev,
+      [targetRegion]: prev[targetRegion].map(section => {
+        if (section.id === sectionId) {
+          return {
+            ...section,
+            containers: section.containers.map(container => {
+              if (container.id === containerId) {
+                return {
+                  ...container,
+                  elements: [...container.elements, newElement]
+                };
+              }
+              return container;
+            })
+          };
+        }
+        return section;
+      })
+    }));
+
+    setSelectedElementId(newElement.id);
+    onElementSelect(newElement);
+  };
+
+  const handleDropInSection = (sectionId: string, data: DataTransfer) => {
+    const elementType = data.getData('elementType') || data.getData('componentType');
+    const label = data.getData('elementLabel') || data.getData('componentLabel');
+    
+    if (!elementType) return;
+
+    let targetRegion: 'top' | 'middle' | 'bottom' | null = null;
+    for (const region of ['top', 'middle', 'bottom'] as const) {
+      if (canvasData[region].some(s => s.id === sectionId)) {
+        targetRegion = region;
+        break;
+      }
+    }
+
+    if (!targetRegion) return;
+
+    if (elementType === 'container' || elementType === 'section') {
+      const newContainer: Container = {
+        id: `container-${Date.now()}`,
+        elements: []
+      };
+
+      setCanvasData(prev => ({
+        ...prev,
+        [targetRegion]: prev[targetRegion].map(section => {
+          if (section.id === sectionId) {
+            return {
+              ...section,
+              containers: [...section.containers, newContainer]
+            };
+          }
+          return section;
+        })
+      }));
+
+      setSelectedContainerId(newContainer.id);
+      onElementSelect(null);
+    } else {
+      const newElement = createNewElement(elementType, label);
+
+      setCanvasData(prev => ({
+        ...prev,
+        [targetRegion]: prev[targetRegion].map(section => {
+          if (section.id === sectionId) {
+            return {
+              ...section,
+              directElements: [...section.directElements, newElement]
+            };
+          }
+          return section;
+        })
+      }));
+
+      setSelectedElementId(newElement.id);
+      onElementSelect(newElement);
+    }
+  };
+
+  const handleSectionSelect = (sectionId: string) => {
+    setSelectedSectionId(sectionId);
+    setSelectedContainerId(null);
+    setSelectedElementId(null);
+    onElementSelect(null);
+  };
+
+  const handleContainerSelect = (containerId: string) => {
+    setSelectedContainerId(containerId);
+    setSelectedElementId(null);
+    onElementSelect(null);
+  };
+
+  const handleElementSelect = (element: CanvasElement) => {
+    setSelectedElementId(element.id);
+    onElementSelect(element);
   };
 
   return (
@@ -253,31 +239,57 @@ export function EditorCanvas({ deviceView, zoom, onElementSelect }: EditorCanvas
           transform: `scale(${zoom / 100})`,
           transformOrigin: 'top center'
         }}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
         onClick={() => {
-          setSelectedId(null);
+          setSelectedSectionId(null);
+          setSelectedContainerId(null);
+          setSelectedElementId(null);
           onElementSelect(null);
         }}
       >
-        {dragOver && (
-          <div className="border-2 border-dashed border-primary bg-primary/5 rounded-lg p-8 m-4 text-center">
-            <p className="text-primary font-medium">Drop element here</p>
-          </div>
-        )}
-        
-        {elements.length === 0 && !dragOver && (
-          <div className="flex items-center justify-center h-full text-muted-foreground">
-            <div className="text-center">
-              <Layout className="w-16 h-16 mx-auto mb-4 opacity-50" />
-              <p className="text-lg font-medium">Drag elements here to start building</p>
-              <p className="text-sm mt-2">Choose from Elements or Components on the left</p>
-            </div>
-          </div>
-        )}
+        <CanvasRegion
+          region="top"
+          label="Top (Header/Navbar)"
+          sections={canvasData.top}
+          selectedSectionId={selectedSectionId}
+          selectedContainerId={selectedContainerId}
+          selectedElementId={selectedElementId}
+          onSectionSelect={handleSectionSelect}
+          onContainerSelect={handleContainerSelect}
+          onElementSelect={handleElementSelect}
+          onDropInContainer={handleDropInContainer}
+          onDropInSection={handleDropInSection}
+          onAddSection={() => handleAddSection('top')}
+        />
 
-        {elements.map(renderElement)}
+        <CanvasRegion
+          region="middle"
+          label="Content"
+          sections={canvasData.middle}
+          selectedSectionId={selectedSectionId}
+          selectedContainerId={selectedContainerId}
+          selectedElementId={selectedElementId}
+          onSectionSelect={handleSectionSelect}
+          onContainerSelect={handleContainerSelect}
+          onElementSelect={handleElementSelect}
+          onDropInContainer={handleDropInContainer}
+          onDropInSection={handleDropInSection}
+          onAddSection={() => handleAddSection('middle')}
+        />
+
+        <CanvasRegion
+          region="bottom"
+          label="Bottom (Footer)"
+          sections={canvasData.bottom}
+          selectedSectionId={selectedSectionId}
+          selectedContainerId={selectedContainerId}
+          selectedElementId={selectedElementId}
+          onSectionSelect={handleSectionSelect}
+          onContainerSelect={handleContainerSelect}
+          onElementSelect={handleElementSelect}
+          onDropInContainer={handleDropInContainer}
+          onDropInSection={handleDropInSection}
+          onAddSection={() => handleAddSection('bottom')}
+        />
       </div>
     </div>
   );
