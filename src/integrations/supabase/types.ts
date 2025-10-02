@@ -14,7 +14,302 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      elements: {
+        Row: {
+          content: Json | null
+          created_at: string | null
+          id: string
+          order_index: number | null
+          page_id: string
+          parent_id: string | null
+          responsive: Json | null
+          styles: Json | null
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          content?: Json | null
+          created_at?: string | null
+          id?: string
+          order_index?: number | null
+          page_id: string
+          parent_id?: string | null
+          responsive?: Json | null
+          styles?: Json | null
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          content?: Json | null
+          created_at?: string | null
+          id?: string
+          order_index?: number | null
+          page_id?: string
+          parent_id?: string | null
+          responsive?: Json | null
+          styles?: Json | null
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "elements_page_id_fkey"
+            columns: ["page_id"]
+            isOneToOne: false
+            referencedRelation: "pages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "elements_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "elements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      form_submissions: {
+        Row: {
+          data: Json
+          form_name: string
+          id: string
+          project_id: string
+          submitted_at: string | null
+        }
+        Insert: {
+          data: Json
+          form_name: string
+          id?: string
+          project_id: string
+          submitted_at?: string | null
+        }
+        Update: {
+          data?: Json
+          form_name?: string
+          id?: string
+          project_id?: string
+          submitted_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form_submissions_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      navigation_components: {
+        Row: {
+          background_color: string | null
+          created_at: string | null
+          id: string
+          logo_position: string | null
+          logo_url: string | null
+          project_id: string
+          responsive_breakpoints: Json | null
+          text_color: string | null
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          background_color?: string | null
+          created_at?: string | null
+          id?: string
+          logo_position?: string | null
+          logo_url?: string | null
+          project_id: string
+          responsive_breakpoints?: Json | null
+          text_color?: string | null
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          background_color?: string | null
+          created_at?: string | null
+          id?: string
+          logo_position?: string | null
+          logo_url?: string | null
+          project_id?: string
+          responsive_breakpoints?: Json | null
+          text_color?: string | null
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "navigation_components_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      navigation_links: {
+        Row: {
+          created_at: string | null
+          icon: string | null
+          id: string
+          is_dropdown: boolean | null
+          label: string
+          navigation_id: string
+          order_index: number | null
+          parent_id: string | null
+          url: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          icon?: string | null
+          id?: string
+          is_dropdown?: boolean | null
+          label: string
+          navigation_id: string
+          order_index?: number | null
+          parent_id?: string | null
+          url?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          icon?: string | null
+          id?: string
+          is_dropdown?: boolean | null
+          label?: string
+          navigation_id?: string
+          order_index?: number | null
+          parent_id?: string | null
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "navigation_links_navigation_id_fkey"
+            columns: ["navigation_id"]
+            isOneToOne: false
+            referencedRelation: "navigation_components"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "navigation_links_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "navigation_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pages: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_home: boolean | null
+          meta_description: string | null
+          meta_title: string | null
+          name: string
+          project_id: string
+          slug: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_home?: boolean | null
+          meta_description?: string | null
+          meta_title?: string | null
+          name: string
+          project_id: string
+          slug: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_home?: boolean | null
+          meta_description?: string | null
+          meta_title?: string | null
+          name?: string
+          project_id?: string
+          slug?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pages_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          plan: string | null
+          storage_used: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id: string
+          plan?: string | null
+          storage_used?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          plan?: string | null
+          storage_used?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      projects: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          published: boolean | null
+          published_url: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          published?: boolean | null
+          published_url?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          published?: boolean | null
+          published_url?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
