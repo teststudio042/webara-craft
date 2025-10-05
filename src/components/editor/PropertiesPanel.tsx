@@ -2,6 +2,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { NavbarEditor } from "./NavbarEditor";
 
 interface PropertiesPanelProps {
   selectedElement: any | null;
@@ -33,6 +34,13 @@ export function PropertiesPanel({ selectedElement, onUpdateElement }: Properties
         </TabsList>
 
         <TabsContent value="content" className="space-y-4 mt-4">
+          {selectedElement.type === 'navbar' && (
+            <NavbarEditor 
+              element={selectedElement}
+              onUpdate={onUpdateElement}
+            />
+          )}
+
           {selectedElement.type === 'text' && (
             <div className="space-y-2">
               <Label>Text Content</Label>

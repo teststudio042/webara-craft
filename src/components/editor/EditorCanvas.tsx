@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CanvasRegion } from "./canvas/CanvasRegion";
 
 interface CanvasElement {
@@ -31,14 +31,39 @@ interface EditorCanvasProps {
   zoom: number;
   onElementSelect: (element: CanvasElement | null) => void;
   isPreviewMode?: boolean;
+  canvasData?: CanvasData | null;
+  onCanvasDataChange?: (data: CanvasData) => void;
 }
 
-export function EditorCanvas({ deviceView, zoom, onElementSelect, isPreviewMode = false }: EditorCanvasProps) {
-  const [canvasData, setCanvasData] = useState<CanvasData>(() => ({
-    top: [{ id: 'section-top', containers: [], directElements: [] }],
-    middle: [],
-    bottom: [{ id: 'section-bottom', containers: [], directElements: [] }]
-  }));
+export function EditorCanvas({ 
+  deviceView, 
+  zoom, 
+  onElementSelect, 
+  isPreviewMode = false,
+  canvasData: externalCanvasData,
+  onCanvasDataChange
+}: EditorCanvasProps) {
+  const [canvasData, setCanvasData] = useState<CanvasData>(() => 
+    externalCanvasData || {
+      top: [{ id: 'section-top', containers: [], directElements: [] }],
+      middle: [],
+      bottom: [{ id: 'section-bottom', containers: [], directElements: [] }]
+    }
+  );
+
+  // Sync with external canvasData
+  useEffect(() => {
+    if (externalCanvasData) {
+      setCanvasData(externalCanvasData);
+    }
+  }, [externalCanvasData]);
+
+  // Notify parent of changes
+  useEffect(() => {
+    if (onCanvasDataChange) {
+      onCanvasDataChange(canvasData);
+    }
+  }, [canvasData]);
   
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
   const [selectedContainerId, setSelectedContainerId] = useState<string | null>(null);

@@ -18,6 +18,9 @@ export default function Editor() {
   const [zoom, setZoom] = useState(100);
   const [selectedElement, setSelectedElement] = useState<any>(null);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [canvasData, setCanvasData] = useState<any>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
 
   useEffect(() => {
     loadProject();
@@ -33,9 +36,64 @@ export default function Editor() {
 
       if (error) throw error;
       setProject(data);
+      setCanvasData((data as any).canvas_data);
     } catch (error) {
       toast.error("Failed to load project");
       navigate("/dashboard");
+    }
+  };
+
+  const handleSave = async () => {
+    if (!canvasData || !projectId) return;
+    
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from("projects")
+        .update({ 
+          canvas_data: canvasData,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", projectId);
+
+      if (error) throw error;
+      toast.success("✅ All changes saved");
+    } catch (error) {
+      console.error("Save error:", error);
+      toast.error("❗ Save failed — please try again");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handlePublish = async () => {
+    if (!canvasData || !projectId) return;
+    
+    setIsPublishing(true);
+    try {
+      // First save the current state
+      await handleSave();
+
+      // Update published status
+      const publishedUrl = `${project?.name?.toLowerCase().replace(/\s+/g, '-')}.webara.app`;
+      const { error } = await supabase
+        .from("projects")
+        .update({ 
+          published: true,
+          published_url: publishedUrl,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", projectId);
+
+      if (error) throw error;
+      
+      toast.success(`🎉 Website published successfully!`);
+      toast.info(`Live at: ${publishedUrl}`);
+    } catch (error) {
+      console.error("Publish error:", error);
+      toast.error("Failed to publish");
+    } finally {
+      setIsPublishing(false);
     }
   };
 
@@ -50,6 +108,10 @@ export default function Editor() {
         onZoomChange={setZoom}
         isPreviewMode={isPreviewMode}
         onPreviewToggle={() => setIsPreviewMode(!isPreviewMode)}
+        onSave={handleSave}
+        onPublish={handlePublish}
+        isSaving={isSaving}
+        isPublishing={isPublishing}
       />
 
       {/* Main Editor Area */}
@@ -82,6 +144,8 @@ export default function Editor() {
           zoom={zoom}
           onElementSelect={setSelectedElement}
           isPreviewMode={isPreviewMode}
+          canvasData={canvasData}
+          onCanvasDataChange={setCanvasData}
         />
 
         {/* Right Sidebar - Properties */}

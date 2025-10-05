@@ -21,6 +21,10 @@ interface EditorToolbarProps {
   onZoomChange: (zoom: number) => void;
   isPreviewMode: boolean;
   onPreviewToggle: () => void;
+  onSave: () => void;
+  onPublish: () => void;
+  isSaving?: boolean;
+  isPublishing?: boolean;
 }
 
 export function EditorToolbar({ 
@@ -30,7 +34,11 @@ export function EditorToolbar({
   zoom,
   onZoomChange,
   isPreviewMode,
-  onPreviewToggle
+  onPreviewToggle,
+  onSave,
+  onPublish,
+  isSaving,
+  isPublishing
 }: EditorToolbarProps) {
   const navigate = useNavigate();
 
@@ -71,9 +79,23 @@ export function EditorToolbar({
           <Eye className="w-4 h-4" />
           {isPreviewMode ? "Edit" : "Preview"}
         </Button>
-        <Button size="sm" className="gap-2">
+        <Button 
+          size="sm" 
+          variant="outline"
+          className="gap-2"
+          onClick={onSave}
+          disabled={isSaving}
+        >
+          {isSaving ? "Saving..." : "Save"}
+        </Button>
+        <Button 
+          size="sm" 
+          className="gap-2"
+          onClick={onPublish}
+          disabled={isPublishing}
+        >
           <Upload className="w-4 h-4" />
-          Publish
+          {isPublishing ? "Publishing..." : "Publish"}
         </Button>
       </div>
 
