@@ -84,7 +84,17 @@ export function EditorCanvas({
       icon: { name: 'star' },
       card: { title: 'Card Title', text: 'Card description goes here', buttonText: 'Learn More' },
       form: { fields: ['Name', 'Email'], submitText: 'Submit' },
-      navbar: { logo: 'Webara', links: ['Home', 'About', 'Contact'], cta: 'Sign Up' },
+      navbar: { 
+        logo: { type: 'text', value: 'Webara' }, 
+        links: [
+          { text: 'Home', url: '#' },
+          { text: 'About', url: '#' },
+          { text: 'Contact', url: '#' }
+        ], 
+        buttons: [
+          { text: 'Sign Up', url: '#', style: 'primary' }
+        ]
+      },
       footer: { 
         columns: [
           { title: 'Company', links: ['About', 'Blog', 'Careers'] },

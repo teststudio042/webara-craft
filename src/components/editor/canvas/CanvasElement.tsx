@@ -93,21 +93,43 @@ export function CanvasElement({ element, isSelected, onSelect, isPreviewMode = f
       );
 
     case 'navbar':
+      const navLinks = element.content.links || [];
+      const navButtons = element.content.buttons || [];
+      const logoDisplay = element.content.logo?.type === 'image' && element.content.logo?.value
+        ? <img src={element.content.logo.value} alt="Logo" className="h-8" />
+        : <span className="font-bold">{element.content.logo?.value || 'Webara'}</span>;
+
       return (
         <div style={{ ...baseStyle, width: '100%' }} onClick={handleClick}>
           <nav className="w-full">
             <div className="flex items-center justify-between gap-4">
-              <div className="font-bold">{element.content.logo || 'Logo'}</div>
+              {logoDisplay}
               <div className="hidden md:flex items-center gap-6 text-sm text-muted-foreground">
-                {(element.content.links || ['Home','About','Contact']).map((link: string) => (
-                  <a key={link} href="#" onClick={(e) => e.preventDefault()} className="hover:text-foreground transition-colors">
-                    {link}
+                {navLinks.map((link: any, idx: number) => (
+                  <a 
+                    key={idx} 
+                    href={link.url || '#'} 
+                    onClick={(e) => e.preventDefault()} 
+                    className="hover:text-foreground transition-colors"
+                  >
+                    {link.text || 'Link'}
                   </a>
                 ))}
               </div>
-              <button className="hidden md:inline-flex px-4 py-2 rounded-md bg-primary text-primary-foreground">
-                {element.content.cta || 'Sign Up'}
-              </button>
+              <div className="hidden md:flex items-center gap-2">
+                {navButtons.map((btn: any, idx: number) => (
+                  <button 
+                    key={idx}
+                    className={`px-4 py-2 rounded-md ${
+                      btn.style === 'primary' ? 'bg-primary text-primary-foreground' :
+                      btn.style === 'secondary' ? 'bg-secondary text-secondary-foreground' :
+                      'border border-border'
+                    }`}
+                  >
+                    {btn.text || 'Button'}
+                  </button>
+                ))}
+              </div>
               <button className="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-md border border-border">
                 <span className="sr-only">Open Menu</span>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
