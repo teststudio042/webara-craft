@@ -47,6 +47,9 @@ export function PropertiesPanel({ selectedElement, onUpdateElement }: Properties
               <Input 
                 defaultValue={selectedElement.content.text}
                 placeholder="Enter text..."
+                onChange={(e) => onUpdateElement({ 
+                  content: { ...selectedElement.content, text: e.target.value } 
+                })}
               />
             </div>
           )}
@@ -58,6 +61,9 @@ export function PropertiesPanel({ selectedElement, onUpdateElement }: Properties
                 <Input 
                   defaultValue={selectedElement.content.text}
                   placeholder="Button text..."
+                  onChange={(e) => onUpdateElement({ 
+                    content: { ...selectedElement.content, text: e.target.value } 
+                  })}
                 />
               </div>
               <div className="space-y-2">
@@ -65,6 +71,9 @@ export function PropertiesPanel({ selectedElement, onUpdateElement }: Properties
                 <Input 
                   defaultValue={selectedElement.content.link}
                   placeholder="https://..."
+                  onChange={(e) => onUpdateElement({ 
+                    content: { ...selectedElement.content, link: e.target.value } 
+                  })}
                 />
               </div>
             </>
@@ -77,6 +86,9 @@ export function PropertiesPanel({ selectedElement, onUpdateElement }: Properties
                 <Input 
                   defaultValue={selectedElement.content.src}
                   placeholder="https://..."
+                  onChange={(e) => onUpdateElement({ 
+                    content: { ...selectedElement.content, src: e.target.value } 
+                  })}
                 />
               </div>
               <div className="space-y-2">
@@ -84,6 +96,9 @@ export function PropertiesPanel({ selectedElement, onUpdateElement }: Properties
                 <Input 
                   defaultValue={selectedElement.content.alt}
                   placeholder="Describe the image..."
+                  onChange={(e) => onUpdateElement({ 
+                    content: { ...selectedElement.content, alt: e.target.value } 
+                  })}
                 />
               </div>
             </>
@@ -97,6 +112,9 @@ export function PropertiesPanel({ selectedElement, onUpdateElement }: Properties
               <Input 
                 type="color"
                 defaultValue={selectedElement.styles.backgroundColor || '#ffffff'}
+                onChange={(e) => onUpdateElement({ 
+                  styles: { ...selectedElement.styles, backgroundColor: e.target.value } 
+                })}
               />
             </div>
             <div className="space-y-2">
@@ -104,6 +122,9 @@ export function PropertiesPanel({ selectedElement, onUpdateElement }: Properties
               <Input 
                 type="color"
                 defaultValue={selectedElement.styles.color || '#000000'}
+                onChange={(e) => onUpdateElement({ 
+                  styles: { ...selectedElement.styles, color: e.target.value } 
+                })}
               />
             </div>
           </div>
@@ -113,6 +134,9 @@ export function PropertiesPanel({ selectedElement, onUpdateElement }: Properties
             <Input 
               defaultValue={selectedElement.styles.fontSize || '16px'}
               placeholder="16px"
+              onChange={(e) => onUpdateElement({ 
+                styles: { ...selectedElement.styles, fontSize: e.target.value } 
+              })}
             />
           </div>
 
@@ -121,6 +145,9 @@ export function PropertiesPanel({ selectedElement, onUpdateElement }: Properties
             <Input 
               defaultValue={selectedElement.styles.borderRadius || '0px'}
               placeholder="8px"
+              onChange={(e) => onUpdateElement({ 
+                styles: { ...selectedElement.styles, borderRadius: e.target.value } 
+              })}
             />
           </div>
 
@@ -129,6 +156,9 @@ export function PropertiesPanel({ selectedElement, onUpdateElement }: Properties
             <Input 
               defaultValue={selectedElement.styles.padding || '0px'}
               placeholder="20px"
+              onChange={(e) => onUpdateElement({ 
+                styles: { ...selectedElement.styles, padding: e.target.value } 
+              })}
             />
           </div>
         </TabsContent>
@@ -140,6 +170,9 @@ export function PropertiesPanel({ selectedElement, onUpdateElement }: Properties
               <Input 
                 defaultValue={selectedElement.styles.width || 'auto'}
                 placeholder="auto"
+                onChange={(e) => onUpdateElement({ 
+                  styles: { ...selectedElement.styles, width: e.target.value } 
+                })}
               />
             </div>
             <div className="space-y-2">
@@ -147,6 +180,9 @@ export function PropertiesPanel({ selectedElement, onUpdateElement }: Properties
               <Input 
                 defaultValue={selectedElement.styles.height || 'auto'}
                 placeholder="auto"
+                onChange={(e) => onUpdateElement({ 
+                  styles: { ...selectedElement.styles, height: e.target.value } 
+                })}
               />
             </div>
           </div>
@@ -156,12 +192,21 @@ export function PropertiesPanel({ selectedElement, onUpdateElement }: Properties
             <Input 
               defaultValue={selectedElement.styles.margin || '0px'}
               placeholder="8px 0"
+              onChange={(e) => onUpdateElement({ 
+                styles: { ...selectedElement.styles, margin: e.target.value } 
+              })}
             />
           </div>
 
           <div className="space-y-2">
             <Label>Display</Label>
-            <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+            <select 
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              defaultValue={selectedElement.styles.display || 'block'}
+              onChange={(e) => onUpdateElement({ 
+                styles: { ...selectedElement.styles, display: e.target.value } 
+              })}
+            >
               <option>block</option>
               <option>flex</option>
               <option>inline-block</option>
