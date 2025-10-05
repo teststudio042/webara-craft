@@ -156,8 +156,42 @@ export default function Editor() {
               <PropertiesPanel
                 selectedElement={selectedElement}
                 onUpdateElement={(updates) => {
-                  // TODO: Implement element update
+                  if (!selectedElement) return;
+                  
                   console.log('Update element:', updates);
+                  
+                  // Update the element in canvasData
+                  const updatedElement = {
+                    ...selectedElement,
+                    ...updates,
+                    content: updates.content ? { ...selectedElement.content, ...updates.content } : selectedElement.content,
+                    styles: updates.styles ? { ...selectedElement.styles, ...updates.styles } : selectedElement.styles,
+                  };
+                  
+                  // Update in all regions
+                  setCanvasData(prev => {
+                    const newData = { ...prev };
+                    
+                    ['top', 'middle', 'bottom'].forEach((region) => {
+                      newData[region as keyof typeof newData] = prev[region as keyof typeof prev].map(section => ({
+                        ...section,
+                        directElements: section.directElements.map(el => 
+                          el.id === selectedElement.id ? updatedElement : el
+                        ),
+                        containers: section.containers.map(container => ({
+                          ...container,
+                          elements: container.elements.map(el =>
+                            el.id === selectedElement.id ? updatedElement : el
+                          )
+                        }))
+                      }));
+                    });
+                    
+                    return newData;
+                  });
+                  
+                  // Update selected element state
+                  setSelectedElement(updatedElement);
                 }}
               />
             </div>

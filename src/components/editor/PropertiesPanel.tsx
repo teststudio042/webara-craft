@@ -20,7 +20,7 @@ export function PropertiesPanel({ selectedElement, onUpdateElement }: Properties
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" key={selectedElement.id}>
       <div className="pb-3 border-b border-border">
         <h3 className="font-semibold text-sm">{selectedElement.label}</h3>
         <p className="text-xs text-muted-foreground mt-1">Type: {selectedElement.type}</p>
@@ -45,7 +45,7 @@ export function PropertiesPanel({ selectedElement, onUpdateElement }: Properties
             <div className="space-y-2">
               <Label>Text Content</Label>
               <Input 
-                defaultValue={selectedElement.content.text}
+                value={selectedElement.content.text}
                 placeholder="Enter text..."
                 onChange={(e) => onUpdateElement({ 
                   content: { ...selectedElement.content, text: e.target.value } 
@@ -59,7 +59,7 @@ export function PropertiesPanel({ selectedElement, onUpdateElement }: Properties
               <div className="space-y-2">
                 <Label>Button Text</Label>
                 <Input 
-                  defaultValue={selectedElement.content.text}
+                  value={selectedElement.content.text}
                   placeholder="Button text..."
                   onChange={(e) => onUpdateElement({ 
                     content: { ...selectedElement.content, text: e.target.value } 
@@ -69,7 +69,7 @@ export function PropertiesPanel({ selectedElement, onUpdateElement }: Properties
               <div className="space-y-2">
                 <Label>Link URL</Label>
                 <Input 
-                  defaultValue={selectedElement.content.link}
+                  value={selectedElement.content.link || ''}
                   placeholder="https://..."
                   onChange={(e) => onUpdateElement({ 
                     content: { ...selectedElement.content, link: e.target.value } 
@@ -84,7 +84,7 @@ export function PropertiesPanel({ selectedElement, onUpdateElement }: Properties
               <div className="space-y-2">
                 <Label>Image URL</Label>
                 <Input 
-                  defaultValue={selectedElement.content.src}
+                  value={selectedElement.content.src || ''}
                   placeholder="https://..."
                   onChange={(e) => onUpdateElement({ 
                     content: { ...selectedElement.content, src: e.target.value } 
@@ -94,7 +94,7 @@ export function PropertiesPanel({ selectedElement, onUpdateElement }: Properties
               <div className="space-y-2">
                 <Label>Alt Text</Label>
                 <Input 
-                  defaultValue={selectedElement.content.alt}
+                  value={selectedElement.content.alt || ''}
                   placeholder="Describe the image..."
                   onChange={(e) => onUpdateElement({ 
                     content: { ...selectedElement.content, alt: e.target.value } 
